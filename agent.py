@@ -4,10 +4,13 @@ from langchain.agents import Tool, create_react_agent, AgentExecutor
 from langchain_core.prompts import PromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
+from dotenv import load_dotenv
 
 import os
+import requests
+import xmltodict
 
-
+load_dotenv()
 
 def agent_response(user_input):
     # Initialize Chat Model
@@ -28,6 +31,47 @@ def agent_response(user_input):
 
         return str(retriever.invoke(query))
 
+    def fetch_patent_info(keyword):
+    
+        # REST API call URL
+        base_url = "http://plus.kipris.or.kr/openapi/rest/patUtiModInfoSearchSevice/freeSearchInfo"
+        
+        # Set API Key
+        api_key = os.getenv("KIPRIS_REST_KEY").replace("\"", "")
+        
+        # Construct URL
+        query_url = f"{base_url}?word={keyword}&docsStart=1&docsCount=5&lastvalue=R&accessKey={api_key}"
+        
+        try:
+            # Make API call
+            response = requests.get(query_url)
+            response.raise_for_status()  # Handle HTTP errors
+        except requests.exceptions.RequestException as e:
+            print(f"Error occurred during API request: {e}")
+            return []
+        
+        # Convert XML response to Dictionary
+        content = response.content
+        dict_type = xmltodict.parse(content)
+        
+        # Extract key data from the dictionary
+        try:
+            PatentInfo = dict_type['response']['body']['items']['PatentUtilityInfo']
+        except KeyError:
+            PatentInfo = ""
+        
+        # Define key mappings
+        key_mapping = {
+            'Applicant': '출원인',
+            'ApplicationNumber': '출원번호',
+            'InventionName': '특허명',
+            'Abstract': '초록',
+            'RegistrationStatus': '등록상태'
+        }
+        
+        context = str([{new_key: item[old_key] for old_key, new_key in key_mapping.items() if old_key in item} for item in PatentInfo])
+        return context
+
     # Define Tools
     rag_chain_tool = Tool(
         name="Retrieval Augmented Generator",
@@ -38,7 +82,6 @@ def agent_response(user_input):
 
     google_search = GoogleSerperAPIWrapper()
 
-
     google_search_tool = Tool(
         name="Intermediate Answer",
         func=google_search.run,
@@ -46,9 +89,17 @@ def agent_response(user_input):
         verbose=False,
     )
 
+    patent_search_tool = Tool(
+        name="Search Patent Information",
+        func=fetch_patent_info,
+        description="useful for finding information about existing patents",
+        verbose=False,
+    )
+
     tools = [
         google_search_tool,
-        rag_chain_tool
+        rag_chain_tool,
+        patent_search_tool
     ]
 
     # Create Prompt Template
