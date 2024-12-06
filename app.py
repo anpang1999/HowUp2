@@ -1,8 +1,6 @@
 import streamlit as st
-from llm_chain import initialize_rag_chain
+from agent import agent_response
 
-# RAG 체인 초기화 - llm_chain 파일로부터 불러오기
-rag_chain = initialize_rag_chain()
 
 # Streamlit main함수 정의
 def main():
@@ -74,7 +72,7 @@ def main():
             try:
                 # 이전 대화 기록과 현재 질문을 함께 전달하여 LLM 모델 호출
                 context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state["chat_history"]])
-                answer = rag_chain.invoke(context)
+                answer = agent_response(context)
                 st.session_state["chat_history"].append({"role": "AI", "content": answer})
             except Exception as e:
                 st.session_state["chat_history"].append({"role": "AI", "content": f"오류 발생: {e}"})
