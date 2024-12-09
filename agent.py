@@ -18,7 +18,7 @@ load_dotenv()
 
 def agent_response(user_input):
     # Initialize Chat Model
-    model = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
+    model = ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
 
     logging.langsmith("HOWUP")
 
@@ -109,23 +109,35 @@ def agent_response(user_input):
     ]
 
     # Create Prompt Template
-    react_prompt_template = """Answer the following questions as best you can. You have access to the following tools:
-    {tools}
+    react_prompt_template =  """ 
+        You are a great AI-Assistant that has access to additional tools in order to answer the following questions as best you can. Always answer in Korean. You have access to the following tools:
 
-    Use the following format:
-    Question: the input question you must answer
-    Thought: you should always think about what to do
-    Action: the action to take, should be the most appropriate one among [{tool_names}].
-    Action Input: the input to the action
-    Observation: the result of the action
-    ... (This cycle can repeat up to 3 times. Once the cycle has completed 3 repetitions or the task is complete, you have to stop repeating and provide a summary or final output.)
-    Thought: I now know the final answer
-    Final Answer: the final answer to the original input question. Always provide a detailed respond in Korean.
-    Begin!
+        {tools}
 
-    Question: {input}
-    Thought:{agent_scratchpad}"""
+        To use a tool, please use the following format:s
 
+        '''
+        Thought: Do I need to use a tool? Yes
+        Action: the action to take, should be one of [{tool_names}]
+        Action Input: the input to the action
+        Observation: the result of the action
+        ... (this Thought/Action/Action Input/Observation can repeat 3 times)
+        '''
+
+        When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+        '''
+        Thought: Do I need to use a tool? No
+        Final Answer: [your response here]
+        '''
+
+
+        Begin!
+
+        Question: {input}
+        Thought:{agent_scratchpad}
+        """
+
+    
     prompt = PromptTemplate.from_template(react_prompt_template)
 
     # Create Search Agent
