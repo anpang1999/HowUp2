@@ -1,5 +1,6 @@
 import streamlit as st
 from agent import agent_response
+from summarizer import hist_summarizer
 
 
 # Streamlit main함수 정의
@@ -32,8 +33,6 @@ def main():
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = []
 
-    # 사용자 질문 입력
-    
 
     # 채팅 기록 화면 표시
     for message in st.session_state["chat_history"]:
@@ -70,8 +69,9 @@ def main():
         
         with st.spinner("답변 생성 중..."):
             try:
-                # 이전 대화 기록과 현재 질문을 함께 전달하여 LLM 모델 호출
+                 # 이전 대화 기록과 현재 질문을 함께 전달하여 LLM 모델 호출
                 context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state["chat_history"]])
+                context = hist_summarizer(context)
                 answer = agent_response(context)
                 st.session_state["chat_history"].append({"role": "AI", "content": answer})
             except Exception as e:
