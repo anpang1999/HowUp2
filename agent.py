@@ -133,7 +133,7 @@ def agent_response(user_input):
 
         Begin!
 
-        Question: {input}
+        {input}
         Thought:{agent_scratchpad}
         """
 
