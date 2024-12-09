@@ -65,14 +65,15 @@ def main():
             )
 
     if query := st.chat_input("채팅을 시작하세요!") :
-        st.session_state["chat_history"].append({"role": "User", "content": query})
+        
         
         with st.spinner("답변 생성 중..."):
             try:
                  # 이전 대화 기록과 현재 질문을 함께 전달하여 LLM 모델 호출
                 context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state["chat_history"]])
                 context = hist_summarizer(context)
-                answer = agent_response(context)
+                st.session_state["chat_history"].append({"role": "User", "content": query})
+                answer = agent_response(f'Context = {context} \nQeustion = {st.session_state["chat_history"][-1]}')
                 st.session_state["chat_history"].append({"role": "AI", "content": answer})
             except Exception as e:
                 st.session_state["chat_history"].append({"role": "AI", "content": f"오류 발생: {e}"})
