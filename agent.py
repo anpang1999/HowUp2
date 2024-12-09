@@ -5,6 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
+from langchain_teddynote import logging
 
 import os
 import requests
@@ -14,7 +15,9 @@ load_dotenv()
 
 def agent_response(user_input):
     # Initialize Chat Model
-    model = ChatOpenAI(model="gpt-4o", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
+    model = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY"))
+
+    logging.langsmith("HOWUP")
 
     # Define RAG Chain function
     def initialize_rag_chain(query):
@@ -27,7 +30,7 @@ def agent_response(user_input):
         )
 
         # Define retriever
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
         return str(retriever.invoke(query))
 
@@ -114,7 +117,7 @@ def agent_response(user_input):
     Action: the action to take, should be one of [{tool_names}]
     Action Input: the input to the action
     Observation: the result of the action
-    ... (this Thought/Action/Action Input/Observation can repeat N times)
+    ... (this Thought/Action/Action Input/Observation can repeat 3 times)
     Thought: I now know the final answer
     Final Answer: the final answer to the original input question. Always respond in Korean.
     Begin!
@@ -126,12 +129,14 @@ def agent_response(user_input):
 
     # Create Search Agent
     search_agent = create_react_agent(model, tools, prompt)
+
     agent_executor = AgentExecutor(
         agent=search_agent,
         tools=tools,
         verbose=True,
         return_intermediate_steps=True,
-        handle_parsing_errors=True
+        handle_parsing_errors=True,
+        # max_iterations=5
     )
 
     # Execute agent with user input and return response
