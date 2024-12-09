@@ -89,7 +89,7 @@ def agent_response(user_input):
     google_search = GoogleSerperAPIWrapper()
 
     google_search_tool = Tool(
-        name="Intermediate Answer",
+        name="Google Search Tool",
         func=google_search.run,
         description="useful for when you need to ask with search",
         verbose=False,

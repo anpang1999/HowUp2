@@ -1,11 +1,12 @@
 import streamlit as st
 from agent import agent_response
-from summarizer import hist_summarizer
+from langchain.memory import ConversationSummaryMemory
+from langchain_openai import ChatOpenAI
 
 
-# Streamlit main함수 정의
+# Define the main function for the Streamlit app
 def main():
-    # 커스텀 헤더 스타일
+    # Custom header styling
     st.markdown(
         """
         <style>
@@ -28,22 +29,45 @@ def main():
         unsafe_allow_html=True,
     )
 
+    # Initialize chat history and session state
+    if 'memory' not in st.session_state:
+        st.session_state.memory = ConversationSummaryMemory(llm=ChatOpenAI(model='gpt-3.5-turbo',temperature=0), return_messages = True)
 
-    # chat_history 초기화
-    if "chat_history" not in st.session_state:
-        st.session_state["chat_history"] = []
+    if 'messages_displayed' not in st.session_state:
+        st.session_state.messages_displayed = []
 
+    # Handle user input
+    if query := st.chat_input("채팅을 시작하세요!") :
+        # Add the user's message to chat memory   
+        st.session_state.memory.chat_memory.add_user_message(query)
+        st.session_state.messages_displayed.append({'role' : 'user','content' : query})
 
-    # 채팅 기록 화면 표시
-    for message in st.session_state["chat_history"]:
-        if message['role'] == "User" :
+        # Generate a response from the AI
+        with st.spinner("답변 생성 중..."):
+            try:
+                # Pass chat history and user query to the LLM model
+                answer = agent_response(str(st.session_state.memory.chat_memory))
+                st.session_state.memory.chat_memory.add_ai_message(answer)
+                st.session_state.messages_displayed.append({'role' : 'assistant', 'content' : answer})
+            except Exception as e:
+                # Handle errors gracefully
+                st.session_state.messages_displayed.append({"role": 'assistant', "content": f"오류 발생: {e}"})
+        # Rerun the app to display updates
+        st.rerun()
+    else:
+        # Prompt the user to enter a question
+        st.warning("하고 싶은 질문이 있나요?")
+
+    # Display chat history on the screen
+    for message in st.session_state.messages_displayed:
+        if message['role'] == "user" :
             with st.container():
-            # 사용자 메시지를 오른쪽 정렬
+            # Render user messages aligned to the right
                 st.markdown(
                     f"""
                     <div style="display: flex; justify-content: flex-end; margin: 5px;">
                         <div style="background-color: #f1f1f1; color: black; padding: 10px; border-radius: 10px; max-width: 70%; text-align: left;">
-                            {message['content']}
+                            {message['content'].strip()}
                     </div>
                     <div style="margin-left: 10px; font-size: 20px;">👤</div>
                 </div>
@@ -51,35 +75,19 @@ def main():
                     unsafe_allow_html=True,
                 )
         else:
-            # 어시스턴트 메시지를 왼쪽 정렬
+            # Render assistant messages aligned to the left
             st.markdown(
                 f"""
                 <div style="display: flex; justify-content: flex-start; margin: 5px;">
                     <div style="margin-right: 10px; font-size: 20px;">🤖</div>
                     <div style="background-color: #e3e8ff; color: black; padding: 10px; border-radius: 10px; max-width: 70%; text-align: left;">
-                        {message['content']}
+                        {message['content'].strip()}
                     </div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-    if query := st.chat_input("채팅을 시작하세요!") :
-        st.session_state["chat_history"].append({"role": "User", "content": query})
-        
-        with st.spinner("답변 생성 중..."):
-            try:
-                 # 이전 대화 기록과 현재 질문을 함께 전달하여 LLM 모델 호출
-                context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state["chat_history"]])
-                context = hist_summarizer(context)
-                answer = agent_response(context)
-                st.session_state["chat_history"].append({"role": "AI", "content": answer})
-            except Exception as e:
-                st.session_state["chat_history"].append({"role": "AI", "content": f"오류 발생: {e}"})
-        st.rerun()
-    else:
-        st.warning("하고 싶은 질문이 있나요?")
-
-# main 실행 함수
+# Execute the main function
 if __name__ == "__main__":
     main()
