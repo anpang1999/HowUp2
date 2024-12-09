@@ -7,11 +7,14 @@ from langchain_openai import OpenAIEmbeddings
 from dotenv import load_dotenv
 from langchain_teddynote import logging
 
+
 import os
 import requests
 import xmltodict
 
 load_dotenv()
+
+
 
 def agent_response(user_input):
     # Initialize Chat Model
@@ -43,7 +46,7 @@ def agent_response(user_input):
         api_key = os.getenv("KIPRIS_REST_KEY").replace("\"", "")
         
         # Construct URL
-        query_url = f"{base_url}?word={keyword}&docsStart=1&docsCount=5&lastvalue=R&accessKey={api_key}"
+        query_url = f"{base_url}?word={keyword}&docsStart=1&docsCount=3&lastvalue=R&accessKey={api_key}"
         
         try:
             # Make API call
@@ -95,7 +98,7 @@ def agent_response(user_input):
     patent_search_tool = Tool(
         name="Search Patent Information",
         func=fetch_patent_info,
-        description="useful for finding information about existing patents",
+        description="useful for finding information about existing patents. The input must be written in Korean.",
         verbose=False,
     )
 
@@ -107,19 +110,17 @@ def agent_response(user_input):
 
     # Create Prompt Template
     react_prompt_template = """Answer the following questions as best you can. You have access to the following tools:
-
     {tools}
 
     Use the following format:
-
     Question: the input question you must answer
     Thought: you should always think about what to do
-    Action: the action to take, should be one of [{tool_names}]
+    Action: the action to take, should be the most appropriate one among [{tool_names}].
     Action Input: the input to the action
     Observation: the result of the action
-    ... (this Thought/Action/Action Input/Observation can repeat 3 times)
+    ... (This cycle can repeat up to 3 times. Once the cycle has completed 3 repetitions or the task is complete, you have to stop repeating and provide a summary or final output.)
     Thought: I now know the final answer
-    Final Answer: the final answer to the original input question. Always respond in Korean.
+    Final Answer: the final answer to the original input question. Always provide a detailed respond in Korean.
     Begin!
 
     Question: {input}
@@ -129,14 +130,13 @@ def agent_response(user_input):
 
     # Create Search Agent
     search_agent = create_react_agent(model, tools, prompt)
-
+    
     agent_executor = AgentExecutor(
         agent=search_agent,
         tools=tools,
         verbose=True,
         return_intermediate_steps=True,
-        handle_parsing_errors=True,
-        # max_iterations=5
+        handle_parsing_errors=True
     )
 
     # Execute agent with user input and return response
