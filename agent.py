@@ -27,7 +27,9 @@ if os.path.exists(CACHE_FILE_PATENT):
     with open(CACHE_FILE_PATENT, "rb") as f:
         response_cache_patent = pickle.load(f) 
 else:
-    response_cache_patent = {}  
+    response_cache_patent = {}
+    with open(CACHE_FILE_PATENT, "wb") as f:
+        pickle.dump(response_cache_patent, f)
 
 
 if os.path.exists(CACHE_FILE_SERP):
@@ -35,7 +37,9 @@ if os.path.exists(CACHE_FILE_SERP):
         response_cache_serp = pickle.load(f) 
 else:
     response_cache_serp = {}
-
+    with open(CACHE_FILE_SERP, "wb") as f:
+        pickle.dump(response_cache_serp, f)
+        
 # 캐시 데이터를 파일에 저장하는 함수
 
 def save_response_cache_patent():

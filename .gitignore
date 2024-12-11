@@ -165,7 +165,8 @@ cython_debug/
 db/
 
 # response_cache
-response_cache/
+response_cache/response_cache_patent.pkl
+response_cache/response_cache_serp.pkl
 
 # file folder
 ./pdfs/
