@@ -2,6 +2,7 @@ import streamlit as st
 from agent import agent_response
 from langchain.memory import ConversationSummaryMemory
 from langchain_openai import ChatOpenAI
+import html
 
 
 # Define the main function for the Streamlit app
@@ -47,6 +48,7 @@ def main():
             try:
                 # Pass chat history and user query to the LLM model
                 answer = agent_response(str(st.session_state.memory.chat_memory))
+                answer = answer.strip().replace("'''", "")
                 st.session_state.memory.chat_memory.add_ai_message(answer)
                 st.session_state.messages_displayed.append({'role' : 'assistant', 'content' : answer})
             except Exception as e:
@@ -60,6 +62,7 @@ def main():
 
     # Display chat history on the screen
     for message in st.session_state.messages_displayed:
+        content = html.escape(message['content'].strip())
         if message['role'] == "user" :
             with st.container():
             # Render user messages aligned to the right
