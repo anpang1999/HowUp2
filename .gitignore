@@ -166,3 +166,8 @@ db/
 
 # response_cache
 response_cache/
+
+# file folder
+./pdfs/
+.pdfs/
+pdfs/
