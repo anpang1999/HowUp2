@@ -70,7 +70,7 @@ def main():
                     f"""
                     <div style="display: flex; justify-content: flex-end; margin: 5px;">
                         <div style="background-color: #f1f1f1; color: black; padding: 10px; border-radius: 10px; max-width: 70%; text-align: left;">
-                            {message['content'].strip()}
+                            {content}
                     </div>
                     <div style="margin-left: 10px; font-size: 20px;">👤</div>
                 </div>
@@ -84,7 +84,7 @@ def main():
                 <div style="display: flex; justify-content: flex-start; margin: 5px;">
                     <div style="margin-right: 10px; font-size: 20px;">🤖</div>
                     <div style="background-color: #e3e8ff; color: black; padding: 10px; border-radius: 10px; max-width: 70%; text-align: left;">
-                        {message['content'].strip()}
+                        {content}
                     </div>
                 </div>
                 """,
