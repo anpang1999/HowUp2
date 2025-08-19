@@ -1,0 +1,32 @@
+streamlit==1.40.2
+python-dotenv==1.0.1
+
+# LangChain and AI/ML
+langchain==0.2.17
+langchain-openai==0.1.25
+langchain-community==0.2.19
+langchain-core==0.2.43
+
+# OpenAI
+openai==1.55.3
+
+# Vector database and embeddings
+faiss-cpu==1.9.0.post1
+numpy==1.26.4
+
+# PDF processing
+pdfplumber==0.11.4
+
+# HTTP requests and API
+requests==2.32.3
+xmltodict==0.14.2
+
+# Data processing and evaluation
+ragas==0.1.19
+datasets==3.1.0
+pandas==2.2.3
+
+# Development and testing
+pytest==8.3.4
+black>=23.0.0
+flake8>=6.0.0
