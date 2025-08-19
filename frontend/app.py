@@ -6,6 +6,9 @@ from models.chat_session import ChatSessionState
 from models.message import Message
 from backend.agent import AgentResponse
 from pydantic import ValidationError
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class ChatApp:
