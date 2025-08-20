@@ -27,6 +27,31 @@ class ChatUI:
                     justify-content: center;
                     margin-top: 0;
                 }
+                
+                .ai-message {
+                    background-color: #e3e8ff;
+                    color: black;
+                    padding: 10px;
+                    border-radius: 10px;
+                    max-width: 70%;
+                    text-align: left;
+                    margin: 5px;
+                }
+                
+                .ai-message pre {
+                    background-color: #f8f9fa;
+                    border: 1px solid #e9ecef;
+                    border-radius: 4px;
+                    padding: 10px;
+                    overflow-x: auto;
+                }
+                
+                .ai-message code {
+                    background-color: #f8f9fa;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    font-family: 'Courier New', monospace;
+                }
             </style>
             """,
             unsafe_allow_html=True,
@@ -62,19 +87,18 @@ class ChatUI:
             - If the `role` is anything else (e.g., "system"), the message appears on the left
               with a robot icon.
 
-        The content of the message is sanitized to prevent injection of malicious HTML.
+        The content is rendered as markdown to properly display code blocks and formatting.
 
         Example:
             render_message(Message(role="user", content="Hello!"))
         """
-        content = html.escape(message.content.strip())  # Escape HTML to prevent XSS attacks
         if message.role == "user":
             st.markdown(
                 f"""
                 <div style="display: flex; justify-content: flex-end; margin: 5px;">
                     <div style="background-color: #f1f1f1; color: black; padding: 10px; 
                     border-radius: 10px; max-width: 70%; text-align: left;">
-                        {content}
+                        {message.content.strip()}
                     </div>
                     <div style="margin-left: 10px; font-size: 20px;">👤</div>
                 </div>
@@ -86,9 +110,8 @@ class ChatUI:
                 f"""
                 <div style="display: flex; justify-content: flex-start; margin: 5px;">
                     <div style="margin-right: 10px; font-size: 20px;">🤖</div>
-                    <div style="background-color: #e3e8ff; color: black; padding: 10px; 
-                    border-radius: 10px; max-width: 70%; text-align: left;">
-                        {content}
+                    <div class="ai-message">
+                        {message.content.strip()}
                     </div>
                 </div>
                 """,
