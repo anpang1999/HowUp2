@@ -50,10 +50,3 @@ CACHE_FILE_SERP = "response_cache/response_cache_serp.pkl"
 # Create CacheManager instances
 patent_cache = CacheManager(CACHE_FILE_PATENT)
 serp_cache = CacheManager(CACHE_FILE_SERP)
-
-# Example operations
-patent_cache.update_cache("example_key", "example_value")
-serp_cache.update_cache("search_query", "search_results")
-
-print(patent_cache.get_cache())
-print(serp_cache.get_cache())
